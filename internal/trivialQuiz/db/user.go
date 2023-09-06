@@ -56,6 +56,7 @@ func (mdb *MongoDB) CreateNewUser(ctx *context.Context, newUser *User) error {
 	return errors.New("this username already exists")
 }
 
+// GetUserByUsername retrieves user's data from database MongoDB
 func (mdb *MongoDB) GetUserByUsername(ctx *context.Context, username string) (*User, error) {
 
 	//	Check existence of user with given username
@@ -75,4 +76,39 @@ func (mdb *MongoDB) GetUserByUsername(ctx *context.Context, username string) (*U
 	}
 
 	return existedUser, nil
+}
+
+// DeleteUserByUsername delete user by their username from the database MongoDB
+func (mdb *MongoDB) DeleteUserByUsername(ctx *context.Context, username string) error {
+	//	Delete document which its username is given
+	_, err := mdb.Collections.UserCollection.Collection.
+		DeleteOne(*ctx, bson.M{"username": username})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (mdb *MongoDB) UpdateUserByUsername(ctx *context.Context,
+	updatedUser *User, username string) error {
+	// Encrypting the user password
+	if encryptedPW, err := bcrypt.GenerateFromPassword([]byte(updatedUser.Password), 4); err != nil {
+		return err
+	} else {
+		updatedUser.Password = string(encryptedPW)
+	}
+	//	Update the user with the given username
+	_, err := mdb.Collections.
+		UserCollection.Collection.UpdateOne(*ctx,
+		bson.M{"username": username},
+		bson.D{
+			{"$set", bson.D{
+				{"password", updatedUser.Password},
+				{"birthday", updatedUser.Birthday},
+				{"email", updatedUser.Email},
+			}},
+		})
+	if err != nil {
+		return err
+	}
+	return nil
 }
