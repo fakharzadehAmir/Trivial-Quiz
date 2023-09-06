@@ -63,7 +63,7 @@ func (a *Auth) Login(ctx *context.Context, cred *Credentials) (*Token, error) {
 	return a.GenerateToken(cred)
 }
 
-func (a *Auth) GetAccountByToken(ctx context.Context, token string) (*Account, error) {
+func (a *Auth) GetAccountByToken(ctx *context.Context, token string) (*Account, error) {
 	//	Handle empty access token
 	if token == "" {
 		return nil, errors.New("access denied: the access token is empty")
@@ -76,7 +76,7 @@ func (a *Auth) GetAccountByToken(ctx context.Context, token string) (*Account, e
 	}
 
 	//	Get tue user entity
-	account, err := a.mongoDB.GetAccountByUsername(&ctx, claim.Username)
+	account, err := a.mongoDB.GetAccountByUsername(ctx, claim.Username)
 	if err != nil {
 		return nil, errors.New("access denied: cannot fetch such a user")
 	}
@@ -100,7 +100,7 @@ func (a *Auth) checkToken(tokenStr string) (*claims, error) {
 		return nil, errors.New("unauthorized")
 	}
 
-	return c, err
+	return c, nil
 }
 func (a *Auth) GenerateToken(cred *Credentials) (*Token, error) {
 	//	Create the JWT token

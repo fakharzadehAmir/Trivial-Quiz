@@ -1,6 +1,8 @@
 package server
 
 import (
+	"Trivia_Quiz/pkg/authenticate"
+	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -13,14 +15,13 @@ type GinServer struct {
 }
 
 // NewGinServer Create a new server instance
-func NewGinServer(modules []Module) *GinServer {
+func NewGinServer(modules []Module, auth *authenticate.Auth, ctx *context.Context) *GinServer {
 	router := gin.Default()
-
 	// Register routes of modules
-	v1 := router.Group(ApiV1)
+	unAuth := router.Group(ApiV1).Use(auth.GinMiddleware(ctx))
 	for _, m := range modules {
 		for _, r := range m.GetRoutes() {
-			v1.Handle(r.Method, r.Path, r.Handler)
+			unAuth.Handle(r.Method, r.Path, r.Handler)
 		}
 	}
 
