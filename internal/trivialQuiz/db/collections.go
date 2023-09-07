@@ -7,4 +7,12 @@ type Collections struct {
 		Collection *mongo.Collection
 		Name       string
 	}
+	QuestionCollection struct {
+		Collection *mongo.Collection
+		Name       string
+	}
+	QuizCollection struct {
+		Collection *mongo.Collection
+		Name       string
+	}
 }

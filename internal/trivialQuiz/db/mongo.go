@@ -75,6 +75,26 @@ func (mdb *MongoDB) CreateCollections() (error, *Collections) {
 		Collection *mongo.Collection
 		Name       string
 	}{Collection: userCollection, Name: "user"}
+
+	//	Create "question" collection if it doesn't exist
+	err, questionCollection := assignCollection(ctx, mdb, "question")
+	if err != nil {
+		return err, nil
+	}
+	collections.QuestionCollection = struct {
+		Collection *mongo.Collection
+		Name       string
+	}{Collection: questionCollection, Name: "question"}
+
+	//	Create "quiz" collection if it doesn't exist
+	err, quizCollection := assignCollection(ctx, mdb, "quiz")
+	if err != nil {
+		return err, nil
+	}
+	collections.QuizCollection = struct {
+		Collection *mongo.Collection
+		Name       string
+	}{Collection: quizCollection, Name: "quiz"}
 	// others
 
 	return nil, collections
