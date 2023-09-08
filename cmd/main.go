@@ -3,6 +3,7 @@ package main
 import (
 	"Trivia_Quiz/config"
 	"Trivia_Quiz/internal/trivialQuiz/api/rest/auth"
+	"Trivia_Quiz/internal/trivialQuiz/api/rest/exam"
 	"Trivia_Quiz/internal/trivialQuiz/api/rest/profile"
 	"Trivia_Quiz/internal/trivialQuiz/api/rest/server"
 	"Trivia_Quiz/internal/trivialQuiz/db"
@@ -75,10 +76,17 @@ func main() {
 		logger.WithError(err).Fatal("error in creating the profile module")
 	}
 
+	//	Create the exam modules
+	examModule, err := exam.NewQuizHandler(mongodb, logger, &ctx)
+	if err != nil {
+		logger.WithError(err).Fatal("error in creating the exam module")
+	}
+
 	//	Create Gin server
 	ginServer := server.NewGinServer([]server.Module{
 		authModule,
 		profileModule,
+		examModule,
 	}, authenticator, &ctx)
 
 	err = ginServer.HttpServer.ListenAndServe()
