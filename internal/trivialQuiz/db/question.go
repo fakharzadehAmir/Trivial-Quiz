@@ -21,7 +21,7 @@ func (q *Question) String() string {
 	return fmt.Sprintf("Question{%+v}", *q)
 }
 
-//	CreateNewQuestion returns error if it can't store new question that you wanted to create
+// CreateNewQuestion returns error if it can't store new question that you wanted to create
 func (mdb *MongoDB) CreateNewQuestion(ctx *context.Context, newQuestion *Question) error {
 	//	Proceed to create new question
 	_, err := mdb.Collections.
@@ -33,7 +33,7 @@ func (mdb *MongoDB) CreateNewQuestion(ctx *context.Context, newQuestion *Questio
 	return nil
 }
 
-//	GetQuestionByID returns the Question and error for the time you want to create a new quiz
+// GetQuestionByID returns the Question and error for the time you want to create a new quiz
 func (mdb *MongoDB) GetQuestionByID(ctx *context.Context,
 	qId primitive.ObjectID) (*Question, error) {
 	//	Check existence of question with given id
@@ -55,31 +55,36 @@ func (mdb *MongoDB) GetQuestionByID(ctx *context.Context,
 	return existedQuestion, nil
 }
 
-//	GetQuestionsByCategoryDifficulty returns array of questions with different category and difficulty
-func (mdb *MongoDB) GetQuestionsByCategoryDifficulty(ctx context.Context,
-	category string, difficulty string) ([]*Question, error) {
+// GetQuestionsByCategoryDifficulty returns array of questions with different category and difficulty
+func (mdb *MongoDB) GetQuestionsByCategoryDifficulty(ctx *context.Context,
+	category string, difficulty string) ([]Question, error) {
 	//	Create a slice to store the result
-	var questions []*Question
+	var questions []Question
 
 	//	Find documents that match the given category and difficulty
 	cursor, err := mdb.Collections.
 		QuestionCollection.Collection.
-		Find(ctx, bson.M{
+		Find(*ctx, bson.M{
 			"category":   category,
 			"difficulty": difficulty,
 		})
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(ctx)
+	defer cursor.Close(*ctx)
 
 	//	Iterate through the cursor and decode documents into the questions slice
-	for cursor.Next(ctx) {
+	var arrayNum int64
+	for cursor.Next(*ctx) {
+		if arrayNum > 10 {
+			break
+		}
 		var question Question
 		if err := cursor.Decode(&question); err != nil {
 			return nil, err
 		}
-		questions = append(questions, &question)
+		questions = append(questions, question)
+		arrayNum++
 	}
 
 	//	Check for errors during cursor iteration
@@ -89,4 +94,3 @@ func (mdb *MongoDB) GetQuestionsByCategoryDifficulty(ctx context.Context,
 
 	return questions, nil
 }
-
