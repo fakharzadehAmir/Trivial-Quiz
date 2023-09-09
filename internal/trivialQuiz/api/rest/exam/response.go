@@ -14,3 +14,7 @@ type questionsQuizResponse struct {
 	Option3 string             `json:"option3"`
 	Option4 string             `json:"option4"`
 }
+
+type submitExamResponse struct {
+	YourScore float64 `json:"your_score"`
+}

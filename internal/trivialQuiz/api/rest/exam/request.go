@@ -2,7 +2,7 @@ package exam
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
-type giveExamRequest struct {
+type submitExamRequest struct {
 	MyExam []answerQuestionsRequest `json:"my_exam"`
 }
 
