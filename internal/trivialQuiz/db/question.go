@@ -33,9 +33,14 @@ func (mdb *MongoDB) CreateNewQuestion(ctx *context.Context, newQuestion *Questio
 	return nil
 }
 
-// GetQuestionByID returns the Question and error for the time you want to create a new quiz
-func (mdb *MongoDB) GetQuestionByID(ctx *context.Context,
-	qId primitive.ObjectID) (*Question, error) {
+// GetQuestionAnswerByID returns the Question and error for the time you want to create a new quiz
+func (mdb *MongoDB) GetQuestionAnswerByID(ctx *context.Context,
+	qId primitive.ObjectID) (string, error) {
+	//	Cast the given id to ObjectID type
+	//questionId, err := primitive.ObjectIDFromHex(qId)
+	//if err != nil {
+	//	return "", err
+	//}
 	//	Check existence of question with given id
 	findQuestion := mdb.Collections.
 		QuestionCollection.Collection.
@@ -43,16 +48,16 @@ func (mdb *MongoDB) GetQuestionByID(ctx *context.Context,
 
 	//	Handle error of retrieving the question with given username
 	if findQuestion.Err() != nil {
-		return nil, findQuestion.Err()
+		return "", findQuestion.Err()
 	}
 
 	//	Decode existed question to the declared variable existedQuestion
 	existedQuestion := &Question{}
 	if err := findQuestion.Decode(existedQuestion); err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return existedQuestion, nil
+	return existedQuestion.Correct, nil
 }
 
 // GetQuestionsByCategoryDifficulty returns array of questions with different category and difficulty
