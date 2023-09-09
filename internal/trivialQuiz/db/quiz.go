@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
@@ -57,15 +57,11 @@ func (mdb *MongoDB) UpdateScoreByID(ctx *context.Context,
 							"is_answered": true,
 						},
 					})
-			if err != nil {
-				return err
-			}
-			//	Score has been updated successfully
-			return nil
+			return err
 		}
-		return fmt.Errorf("time limit exceeded, cannot update score")
+		return errors.New("time limit exceeded, cannot update score")
 	}
-	return fmt.Errorf("quiz has already been answered, score cannot be updated")
+	return errors.New("quiz has already been answered, score cannot be updated")
 }
 
 func (mdb *MongoDB) GetUserOfQuizByID(ctx *context.Context,
