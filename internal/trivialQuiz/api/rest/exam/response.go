@@ -18,3 +18,16 @@ type questionsQuizResponse struct {
 type submitExamResponse struct {
 	YourScore float64 `json:"your_score"`
 }
+
+type checkExamResponse struct {
+	Answers []checkQuestionResponse `json:"answers"`
+}
+
+type checkQuestionResponse struct {
+	Text          string `json:"text"`
+	CorrectAnswer string `json:"correct_answer"`
+	Option1       string `json:"option_1"`
+	Option2       string `json:"option_2"`
+	Option3       string `json:"option_3"`
+	Option4       string `json:"option_4"`
+}

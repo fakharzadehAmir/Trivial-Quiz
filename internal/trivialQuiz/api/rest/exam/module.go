@@ -38,6 +38,11 @@ func (q *QuizHandler) GetRoutes() []server.Route {
 			Path:    "/submit-exam/:quizId",
 			Handler: q.SubmitExamHandler,
 		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/check-exam/:quizId/answers",
+			Handler: q.CheckExamHandler,
+		},
 	}
 }
 
@@ -192,4 +197,64 @@ func (q *QuizHandler) SubmitExamHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, submitExamResponse{
 		YourScore: totalScore,
 	})
+}
+
+func (q *QuizHandler) CheckExamHandler(c *gin.Context) {
+	//	Get qid params in url and cast it to ObjectID
+	qid := c.Param("quizId")
+	quizId, err := primitive.ObjectIDFromHex(qid)
+	if err != nil {
+		q.logger.WithError(err).Warn("can not cast quiz id to ObjectID")
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "can not cast quiz id to ObjectID",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	//	Check logged-in username with user of the quiz with given id
+	loggedInUser, exists := c.Get("username")
+	if !exists {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "no user has been logged in, login is required",
+		})
+		return
+	}
+	correctUser, err := q.db.GetUserOfQuizByID(q.ctx, quizId, loggedInUser.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "can not retrieve the quiz with given id",
+		})
+		return
+	}
+	if !correctUser {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "the user of given quiz is not matched with logged-in user",
+		})
+		return
+	}
+
+	//	Get Question of the quiz with the given id if it's been answered
+	questions, err := q.db.GetQuestionsByID(q.ctx, quizId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "this quiz has not been answered",
+		})
+		return
+	}
+
+	//	Initialize retrieved questions in its struct response body
+	resBody := checkExamResponse{}
+	for _, question := range questions {
+		resBody.Answers = append(resBody.Answers,
+			checkQuestionResponse{
+				Text:          question.Text,
+				CorrectAnswer: question.Correct,
+				Option1:       question.Options[0],
+				Option2:       question.Options[1],
+				Option3:       question.Options[2],
+				Option4:       question.Options[3],
+			})
+	}
+	c.JSON(http.StatusOK, resBody)
 }
