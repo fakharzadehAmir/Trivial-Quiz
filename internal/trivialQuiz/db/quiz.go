@@ -76,3 +76,20 @@ func (mdb *MongoDB) GetUserOfQuizByID(ctx *context.Context,
 	//	quiz has been retrieved successfully
 	return quiz.UserAnswerer == loggedInUser, nil
 }
+
+func (mdb *MongoDB) GetQuestionsByID(ctx *context.Context,
+	quizId primitive.ObjectID) ([]Question, error) {
+	// Retrieve the quiz document
+	var quiz Quiz
+	err := mdb.Collections.QuizCollection.Collection.
+		FindOne(*ctx, bson.M{"_id": quizId}).Decode(&quiz)
+	if err != nil {
+		return nil, err
+	}
+	//	Check weather this quiz is answered or not
+	if !quiz.IsAnswered {
+		return nil, errors.New("this quiz has not been answered")
+	}
+	//	quiz.Question has been retrieved successfully
+	return quiz.Questions, nil
+}
